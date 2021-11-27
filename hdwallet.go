@@ -13,7 +13,7 @@ import (
 
 // copy from https://github.com/miguelmota/go-ethereum-hdwallet
 
-type HDWallet struct {
+type Wallet struct {
 	masterKey *hdkeychain.ExtendedKey
 	seed      []byte
 	stateLock sync.RWMutex
@@ -21,20 +21,20 @@ type HDWallet struct {
 
 type DerivationPath = accounts.DerivationPath
 
-func NewHDWallet(seed []byte) (*HDWallet, error) {
+func NewWallet(seed []byte) (*Wallet, error) {
 	masterKey, err := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
 	if err != nil {
 		return nil, err
 	}
 
-	return &HDWallet{
+	return &Wallet{
 		masterKey: masterKey,
 		seed:      seed,
 	}, nil
 }
 
 // NewFromMnemonic returns a new wallet from a BIP-39 mnemonic.
-func NewFromMnemonic(mnemonic string) (*HDWallet, error) {
+func NewFromMnemonic(mnemonic string) (*Wallet, error) {
 	if mnemonic == "" {
 		return nil, errors.New("mnemonic is required")
 	}
@@ -48,7 +48,7 @@ func NewFromMnemonic(mnemonic string) (*HDWallet, error) {
 		return nil, err
 	}
 
-	wallet, err := NewHDWallet(seed)
+	wallet, err := NewWallet(seed)
 	if err != nil {
 		return nil, err
 	}
@@ -57,16 +57,16 @@ func NewFromMnemonic(mnemonic string) (*HDWallet, error) {
 }
 
 // NewFromSeed returns a new wallet from a BIP-39 seed.
-func NewFromSeed(seed []byte) (*HDWallet, error) {
+func NewFromSeed(seed []byte) (*Wallet, error) {
 	if len(seed) == 0 {
 		return nil, errors.New("seed is required")
 	}
 
-	return NewHDWallet(seed)
+	return NewWallet(seed)
 }
 
 // DerivePrivateKey derives the private key of the derivation path.
-func (w *HDWallet) DerivePrivateKey(path DerivationPath) (*ecdsa.PrivateKey, error) {
+func (w *Wallet) DerivePrivateKey(path DerivationPath) (*ecdsa.PrivateKey, error) {
 	var err error
 	key := w.masterKey
 	for _, n := range path {
@@ -86,7 +86,7 @@ func (w *HDWallet) DerivePrivateKey(path DerivationPath) (*ecdsa.PrivateKey, err
 }
 
 // DerivePublicKey derives the public key of the derivation path.
-func (w *HDWallet) DerivePublicKey(path DerivationPath) (*ecdsa.PublicKey, error) {
+func (w *Wallet) DerivePublicKey(path DerivationPath) (*ecdsa.PublicKey, error) {
 	privateKeyECDSA, err := w.DerivePrivateKey(path)
 	if err != nil {
 		return nil, err
