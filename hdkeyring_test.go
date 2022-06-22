@@ -1,17 +1,17 @@
-package hdwallet
+package hdkeyring
 
 import (
 	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/icodeface/hdwallet/bip32"
+	"github.com/icodeface/hdkeyring/bip32"
 	"testing"
 )
 
-func TestWallet(t *testing.T) {
+func TestKeyring(t *testing.T) {
 	mnemonic := "tag volcano eight thank tide danger coast health above argue embrace heavy"
 
-	ethWallet, err := NewFromMnemonic(mnemonic, bip32.SeedModifierBitcoin)
+	ethKeyring, err := NewFromMnemonic(mnemonic, bip32.SeedModifierBitcoin)
 	if err != nil {
 		t.Error(err)
 		return
@@ -23,7 +23,7 @@ func TestWallet(t *testing.T) {
 		return
 	}
 
-	ecPrivateKey, err := ethWallet.DeriveECDSAPrivateKey(ethPath)
+	ecPrivateKey, err := ethKeyring.DeriveECDSAPrivateKey(ethPath)
 	if err != nil {
 		t.Error(err)
 		return
@@ -34,7 +34,7 @@ func TestWallet(t *testing.T) {
 		return
 	}
 
-	ecPubKey, err := ethWallet.DeriveECDSAPublicKey(ethPath)
+	ecPubKey, err := ethKeyring.DeriveECDSAPublicKey(ethPath)
 	if err != nil {
 		t.Error(err)
 		return
@@ -47,13 +47,13 @@ func TestWallet(t *testing.T) {
 	}
 
 	solPath, _ := ParseDerivationPath("m/44'/501'/0'/0'")
-	solWallet, err := NewFromMnemonic(mnemonic, bip32.SeedModifierEd25519)
+	solKeyring, err := NewFromMnemonic(mnemonic, bip32.SeedModifierEd25519)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	edPriv, err := solWallet.DeriveEd25519PrivateKey(solPath)
+	edPriv, err := solKeyring.DeriveEd25519PrivateKey(solPath)
 	if err != nil {
 		t.Error(err)
 		return
@@ -63,7 +63,7 @@ func TestWallet(t *testing.T) {
 		return
 	}
 
-	edPub, err := solWallet.DeriveEd25519PublicKey(solPath)
+	edPub, err := solKeyring.DeriveEd25519PublicKey(solPath)
 	if err != nil {
 		t.Error(err)
 		return

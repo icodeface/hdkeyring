@@ -1,4 +1,4 @@
-package hdwallet
+package hdkeyring
 
 import (
 	"errors"

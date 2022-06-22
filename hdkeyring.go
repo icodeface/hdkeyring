@@ -1,4 +1,4 @@
-package hdwallet
+package hdkeyring
 
 import (
 	"crypto/ecdsa"
@@ -6,32 +6,32 @@ import (
 	"errors"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/icodeface/hdwallet/bip32"
+	"github.com/icodeface/hdkeyring/bip32"
 	"github.com/tyler-smith/go-bip39"
 	"math/big"
 	"sync"
 )
 
-type Wallet struct {
+type Keyring struct {
 	masterKey *bip32.Key
 	seed      []byte
 	stateLock sync.RWMutex
 }
 
-func NewWallet(seed []byte, seedModifier []byte) (*Wallet, error) {
+func NewKeyring(seed []byte, seedModifier []byte) (*Keyring, error) {
 	masterKey, err := bip32.NewMasterKey(seed, seedModifier)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Wallet{
+	return &Keyring{
 		masterKey: masterKey,
 		seed:      seed,
 	}, nil
 }
 
-// NewFromMnemonic returns a new wallet from a BIP-39 mnemonic.
-func NewFromMnemonic(mnemonic string, seedModifier string) (*Wallet, error) {
+// NewFromMnemonic returns a new Keyring from a BIP-39 mnemonic.
+func NewFromMnemonic(mnemonic string, seedModifier string) (*Keyring, error) {
 	if mnemonic == "" {
 		return nil, errors.New("mnemonic is required")
 	}
@@ -45,15 +45,15 @@ func NewFromMnemonic(mnemonic string, seedModifier string) (*Wallet, error) {
 		return nil, err
 	}
 
-	wallet, err := NewWallet(seed, []byte(seedModifier))
+	keyring, err := NewKeyring(seed, []byte(seedModifier))
 	if err != nil {
 		return nil, err
 	}
 
-	return wallet, nil
+	return keyring, nil
 }
 
-func (w *Wallet) DeriveKey(path DerivationPath) (*bip32.Key, error) {
+func (w *Keyring) DeriveKey(path DerivationPath) (*bip32.Key, error) {
 	var err error
 	key := w.masterKey
 	for _, n := range path {
@@ -66,7 +66,7 @@ func (w *Wallet) DeriveKey(path DerivationPath) (*bip32.Key, error) {
 }
 
 // DeriveECDSAPrivateKey derives the private key of the derivation path.
-func (w *Wallet) DeriveECDSAPrivateKey(path DerivationPath) (*ecdsa.PrivateKey, error) {
+func (w *Keyring) DeriveECDSAPrivateKey(path DerivationPath) (*ecdsa.PrivateKey, error) {
 	key, err := w.DeriveKey(path)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (w *Wallet) DeriveECDSAPrivateKey(path DerivationPath) (*ecdsa.PrivateKey, 
 }
 
 // DeriveECDSAPublicKey derives the public key of the derivation path.
-func (w *Wallet) DeriveECDSAPublicKey(path DerivationPath) (*ecdsa.PublicKey, error) {
+func (w *Keyring) DeriveECDSAPublicKey(path DerivationPath) (*ecdsa.PublicKey, error) {
 	privateKeyECDSA, err := w.DeriveECDSAPrivateKey(path)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func ECDSAPublicKeyBytes(pub *ecdsa.PublicKey) []byte {
 }
 
 // DeriveEd25519PrivateKey derives the private key of the derivation path.
-func (w *Wallet) DeriveEd25519PrivateKey(path DerivationPath) (*ed25519.PrivateKey, error) {
+func (w *Keyring) DeriveEd25519PrivateKey(path DerivationPath) (*ed25519.PrivateKey, error) {
 	key, err := w.DeriveKey(path)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (w *Wallet) DeriveEd25519PrivateKey(path DerivationPath) (*ed25519.PrivateK
 }
 
 // DeriveEd25519PublicKey derives the private key of the derivation path.
-func (w *Wallet) DeriveEd25519PublicKey(path DerivationPath) (ed25519.PublicKey, error) {
+func (w *Keyring) DeriveEd25519PublicKey(path DerivationPath) (ed25519.PublicKey, error) {
 	privateKeyEd25519, err := w.DeriveEd25519PrivateKey(path)
 	if err != nil {
 		return nil, err

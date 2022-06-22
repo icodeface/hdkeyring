@@ -1,4 +1,4 @@
-module github.com/icodeface/hdwallet
+module github.com/icodeface/hdkeyring
 
 go 1.16
 
