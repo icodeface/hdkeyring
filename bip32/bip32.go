@@ -19,11 +19,6 @@ const (
 	PublicKeyCompressedLength = 33
 )
 
-const (
-	SeedModifierBitcoin = "Bitcoin seed"
-	SeedModifierEd25519 = "ed25519 seed"
-)
-
 var (
 	// PrivateWalletVersion is the version flag for serialized private keys
 	PrivateWalletVersion, _ = hex.DecodeString("0488ADE4")
@@ -52,6 +47,24 @@ var (
 	ErrNoPublicDerivation = errors.New("No public derivation for ed25519")
 )
 
+type KeyType int8
+
+const (
+	KeyTypeECDSA   KeyType = 0
+	KeyTypeEd25519 KeyType = 1
+)
+
+func (t KeyType) SeedModifier() []byte {
+	switch t {
+	case KeyTypeECDSA:
+		return []byte("Bitcoin seed")
+	case KeyTypeEd25519:
+		return []byte("ed25519 seed")
+	default:
+		return nil
+	}
+}
+
 // Key represents a bip32 extended key
 type Key struct {
 	Key         []byte // 33 bytes
@@ -61,13 +74,13 @@ type Key struct {
 	ChainCode   []byte // 32 bytes
 	Depth       byte   // 1 bytes
 	IsPrivate   bool   // unserialized
-	IsEd25519   bool
+	Type        KeyType
 }
 
 // NewMasterKey creates a new master extended key from a seed
-func NewMasterKey(seed []byte, seedModifier []byte) (*Key, error) {
+func NewMasterKey(seed []byte, keyType KeyType) (*Key, error) {
 	// Generate key and chaincode
-	hmacer := hmac.New(sha512.New, seedModifier)
+	hmacer := hmac.New(sha512.New, keyType.SeedModifier())
 	_, err := hmacer.Write(seed)
 	if err != nil {
 		return nil, err
@@ -93,7 +106,7 @@ func NewMasterKey(seed []byte, seedModifier []byte) (*Key, error) {
 		ChildNumber: []byte{0x00, 0x00, 0x00, 0x00},
 		FingerPrint: []byte{0x00, 0x00, 0x00, 0x00},
 		IsPrivate:   true,
-		IsEd25519:   bytes.Compare(seedModifier, []byte(SeedModifierEd25519)) == 0,
+		Type:        keyType,
 	}
 
 	return key, nil
@@ -111,10 +124,10 @@ func (key *Key) NewChildKey(childIdx uint32) (*Key, error) {
 		ChildNumber: uint32Bytes(childIdx),
 		Depth:       key.Depth + 1,
 		IsPrivate:   key.IsPrivate,
-		IsEd25519:   key.IsEd25519,
+		Type:        key.Type,
 	}
 
-	if key.IsEd25519 {
+	if key.Type == KeyTypeEd25519 {
 		// no public derivation for ed25519
 		if childIdx < FirstHardenedChild {
 			return nil, ErrNoPublicDerivation

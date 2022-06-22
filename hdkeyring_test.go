@@ -4,14 +4,13 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/icodeface/hdkeyring/bip32"
 	"testing"
 )
 
 func TestKeyring(t *testing.T) {
 	mnemonic := "tag volcano eight thank tide danger coast health above argue embrace heavy"
 
-	ethKeyring, err := NewFromMnemonic(mnemonic, bip32.SeedModifierBitcoin)
+	ethKeyring, err := NewFromMnemonic(mnemonic, KeyTypeECDSA)
 	if err != nil {
 		t.Error(err)
 		return
@@ -47,7 +46,7 @@ func TestKeyring(t *testing.T) {
 	}
 
 	solPath, _ := ParseDerivationPath("m/44'/501'/0'/0'")
-	solKeyring, err := NewFromMnemonic(mnemonic, bip32.SeedModifierEd25519)
+	solKeyring, err := NewFromMnemonic(mnemonic, KeyTypeEd25519)
 	if err != nil {
 		t.Error(err)
 		return

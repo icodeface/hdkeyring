@@ -18,8 +18,15 @@ type Keyring struct {
 	stateLock sync.RWMutex
 }
 
-func NewKeyring(seed []byte, seedModifier []byte) (*Keyring, error) {
-	masterKey, err := bip32.NewMasterKey(seed, seedModifier)
+type KeyType = bip32.KeyType
+
+const (
+	KeyTypeECDSA   = bip32.KeyTypeECDSA
+	KeyTypeEd25519 = bip32.KeyTypeEd25519
+)
+
+func NewKeyring(seed []byte, keyType KeyType) (*Keyring, error) {
+	masterKey, err := bip32.NewMasterKey(seed, keyType)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +38,7 @@ func NewKeyring(seed []byte, seedModifier []byte) (*Keyring, error) {
 }
 
 // NewFromMnemonic returns a new Keyring from a BIP-39 mnemonic.
-func NewFromMnemonic(mnemonic string, seedModifier string) (*Keyring, error) {
+func NewFromMnemonic(mnemonic string, keyType KeyType) (*Keyring, error) {
 	if mnemonic == "" {
 		return nil, errors.New("mnemonic is required")
 	}
@@ -45,7 +52,7 @@ func NewFromMnemonic(mnemonic string, seedModifier string) (*Keyring, error) {
 		return nil, err
 	}
 
-	keyring, err := NewKeyring(seed, []byte(seedModifier))
+	keyring, err := NewKeyring(seed, keyType)
 	if err != nil {
 		return nil, err
 	}
