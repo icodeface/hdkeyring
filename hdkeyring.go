@@ -4,7 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"errors"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/icodeface/hdkeyring/bip32"
 	"github.com/tyler-smith/go-bip39"

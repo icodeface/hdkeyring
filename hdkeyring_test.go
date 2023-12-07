@@ -3,7 +3,7 @@ package hdkeyring
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/btcsuite/btcutil/base58"
+	"github.com/btcsuite/btcd/btcutil/base58"
 	"testing"
 )
 
